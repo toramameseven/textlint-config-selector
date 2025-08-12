@@ -4,7 +4,7 @@ export class StatusBar {
   private _delegate = window.createStatusBarItem(StatusBarAlignment.Right, 0);
   constructor() {
     this._delegate.text = "TLconfig";
-    this._delegate.command = "textlint-config.statusBarMenu"; // ステータスバークリックでコマンド実行
+    this._delegate.command = "textlint-config-selector.statusBarMenu"; // ステータスバークリックでコマンド実行
     this._delegate.show();
   }
 

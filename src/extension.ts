@@ -9,9 +9,8 @@ const statusBar = new StatusBar();
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "textlint-config" is now active!');
 
-  const selectConfigCommand = commands.registerCommand("textlint-config.statusBarMenu", selectConfig);
-  
-  const pickConfigsCommands = commands.registerCommand("textlint-config.pickConfigs", pickConfigs);
+  const selectConfigCommand = commands.registerCommand("textlint-config-selector.statusBarMenu", selectConfig);
+  const pickConfigsCommands = commands.registerCommand("textlint-config-selector.pickConfigs", pickConfigs);
   context.subscriptions.push(selectConfigCommand, pickConfigsCommands, statusBar);
 
   const pickedConfig = getConfig<string>("textlint", "configPath", "");
@@ -34,7 +33,7 @@ async function pickConfigs() {
     openLabel: "Select textlint config folder",
   });
   if (!folder || folder.length === 0) {
-    window.showErrorMessage("No folder selected.");
+    // User cancelled the folder selection
     return;
   }
   // select files starting with .textlintrc recursively in the selected folder
@@ -43,17 +42,24 @@ async function pickConfigs() {
     new vscode.RelativePattern(folderPath, "**/.textlintrc*"),
     "**/node_modules/**" // exclude node_modules
   );
+
   // update textlint-config.optionalConfigPathes
   const configPaths = configFiles.map(file => file.fsPath);
-  await workspace.getConfiguration("textlint-config").update(
+  await workspace.getConfiguration("textlint-config-selector").update(
     "optionalConfigPathes",
     configPaths,
     // for global scope
     true
   );
 
-
+  // update textlint.nodePath
   const nodePath = folderPath + "\\node_modules";
+  // check if node_modules exists
+  const fs = require('fs');
+  if (!fs.existsSync(nodePath)) {
+    window.showErrorMessage("No node_modules found in the selected folder.");
+    return;
+  }
   await workspace.getConfiguration("textlint").update(
     "nodePath",
     nodePath,
@@ -64,7 +70,7 @@ async function pickConfigs() {
 
 
 const selectConfig = async () => {
-  const pathes = getConfig<string[]>("textlint-config","optionalConfigPathes", []);
+  const pathes = getConfig<string[]>("textlint-config-selector","optionalConfigPathes", []);
   if (pathes.length > 0) {
     const items = pathes.map((path) => {
       return {
@@ -88,6 +94,13 @@ const selectConfig = async () => {
 };
 
 
+/**
+ * get vscode configuration
+ * @param section 
+ * @param subSection 
+ * @param defaults 
+ * @returns 
+ */
 function getConfig<T>(section: string, subSection: string, defaults: T) {
   return vscode.workspace.getConfiguration(section).get<T>(subSection, defaults);
 }

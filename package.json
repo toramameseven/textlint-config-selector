@@ -1,29 +1,35 @@
 {
-  "name": "textlint-config",
-  "displayName": "textlint-config",
+  "name": "textlint-config-selector",
+  "displayName": "textlint-config-selector",
   "description": "",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toramameseven/textlint-config-selector"
+  },
   "engines": {
     "vscode": "^1.101.0"
   },
   "categories": [
-    "Other"
+    "Linters"
   ],
-  "activationEvents": ["*"],
+  "license": "MIT",
+  "publisher": "toramameseven",
+  "activationEvents": ["onLanguage"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "textlint-config.pickConfigs",
+        "command": "textlint-config-selector.pickConfigs",
         "title": "pick textlint configs",
-        "category": "Textlint Config"
+        "category": "Textlint Config Selector"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "textlint-config",
+      "title": "textlint-config-selector",
       "properties": {
-        "textlint-config.optionalConfigPathes": {
+        "textlint-config-selector.optionalConfigPathes": {
           "default": [],
           "type": [
             "array"
@@ -48,7 +54,9 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "vscode-ls": "npx vsce ls",
+    "vscode-package": "npx vsce package"
   },
   "devDependencies": {
     "@types/vscode": "^1.101.0",
