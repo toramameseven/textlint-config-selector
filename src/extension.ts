@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { StatusBar } from "./status";
 const statusBar = new StatusBar();
+let global_current_config = "";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "textlint-config" is now active!');
@@ -14,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(selectConfigCommand, pickConfigsCommands, statusBar);
 
   const pickedConfig = getConfig<string>("textlint", "configPath", "");
+  global_current_config = pickedConfig;
   statusBar.setTooltip(`Selected config: ${pickedConfig}`);
 }
 
@@ -70,27 +72,32 @@ async function pickConfigs() {
 
 
 const selectConfig = async () => {
-  const pathes = getConfig<string[]>("textlint-config-selector","optionalConfigPathes", []);
+  const pathes = getConfig<string[]>("textlint-config-selector", "optionalConfigPathes", []);
   if (pathes.length > 0) {
     const items = pathes.map((path) => {
+      const currntMark = path === global_current_config ? "*" : "";
       return {
-        label: path,
+        label: currntMark + path,
         description: path,
       };
     });
     const picked = await window.showQuickPick(items, {
       placeHolder: "select a textlint config file",
     });
+
     if (picked) {
-      await workspace.getConfiguration("textlint").update(
-        "configPath",
-        picked.label,
-        // for global scope
-        true
-      );
-      statusBar.setTooltip(`Selected config: ${picked.label}`);
+      if (global_current_config !== picked.description) {
+        global_current_config = picked.description;
+        await workspace.getConfiguration("textlint").update(
+          "configPath",
+          global_current_config,
+          // for global scope
+          true
+        );
+        statusBar.setTooltip(`Selected config: ${global_current_config}`);
+      }
     }
-  }
+  };
 };
 
 
